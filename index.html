@@ -114,7 +114,7 @@ function flipCard() {
     setTimeout(checkMatch, 1000);
   }
 }
-
+//function to check if 2 opened cards have same emoji
 function checkMatch() {
   if (firstCard.dataset.icon === secondCard.dataset.icon) {
     score[currentPlayer]++;
