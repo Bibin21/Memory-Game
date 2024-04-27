@@ -101,8 +101,8 @@ for (let i = 0; i < 6; i++) {
   }
 }
 
-function flipCard() {
-  if (this.classList.contains('flip') || firstCard === this) return;
+async function flipCard() {
+  if (this.classList.contains('flip') || firstCard === this || secondCard!=null) return;
 
   this.textContent = this.dataset.icon;
   this.classList.add('flip');
@@ -111,11 +111,13 @@ function flipCard() {
     firstCard = this;
   } else {
     secondCard = this;
-    setTimeout(checkMatch, 1000);
+    event.stopPropagation();
+    setTimeout(checkMatch, 800);
+   
   }
 }
 
-function checkMatch() {
+async function checkMatch() {
   if (firstCard.dataset.icon === secondCard.dataset.icon) {
     score[currentPlayer]++;
     scoreDisplay.innerHTML = `<span style="background-color:blue;">Blue: ${score.blue} </span>  | <span style="background-color:red;"> Red: </span> ${score.red}`;
