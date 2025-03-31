@@ -35,6 +35,7 @@
     <div id="winnerPopup" class="popup">
       <div class="popup-content">
         <h2>Winner: <span id="winnerName"></span></h2>
+        <button class="game-button green" id="playAgainButton" onclick="playAgain()" >Play Again</button>
       </div>
     </div>
 
@@ -50,6 +51,9 @@ const blueSpan = document.querySelector("#blue-score");
 const redSpan = document.querySelector("#red-score");
 const winnerPopup = document.getElementById("winnerPopup");
 const winnerName = document.getElementById("winnerName");
+const playerSelectPopup = document.getElementById("playerSelectPopup")
+let interval = null;
+
 
 let currentPlayer;
 let firstCard = null;
@@ -71,7 +75,6 @@ const icons = [
 ];
 
 // Shuffle the icons array
-icons.sort(() => Math.random() - 0.5);
 
 // Show the player selection popup on page load
 window.onload = () => {
@@ -82,23 +85,35 @@ window.onload = () => {
 document.getElementById("two-players").addEventListener("click", () => {
   playerCount = 2;
   players = ["blue", "red"];
-  score.green = 0;
   setupGame();
   playerSelectPopup.classList.remove("show");
 });
+
+function resetScores() {
+  Object.keys(score).forEach(player => {
+    score[player] = 0;
+  });
+}
 
 // Select 3 Players
 document.getElementById("three-players").addEventListener("click", () => {
   playerCount = 3;
   players = ["blue", "red", "green"];
-  score.green = 0;
+  
+  const element = document.getElementById('green-score');
+
+if (!element) {
   scoreDisplay.innerHTML += `<span id="green-score" style="background-color: green"> Green: 0 </span>`;
+}
   setupGame();
   playerSelectPopup.classList.remove("show");
 });
 
 // Set up the game after player selection
 function setupGame() {
+  icons.sort(() => Math.random() - 0.5);
+  resetScores();
+  updateScoreDisplay();
   currentPlayer = players[0];
   updatePlayerIndicator();
   createGameBoard();
@@ -106,6 +121,7 @@ function setupGame() {
 
 // Create the game grid dynamically
 function createGameBoard() {
+  destroyGameBoard();
   for (let i = 0; i < 6; i++) {
     for (let j = 0; j < 6; j++) {
       const card = document.createElement("div");
@@ -115,6 +131,13 @@ function createGameBoard() {
       gameBoard.appendChild(card);
     }
   }
+}
+
+function destroyGameBoard() {
+  Array.from(gameBoard.children).forEach(child => {
+  if (child !== playerSelectPopup) {
+    gameBoard.removeChild(child);
+  }});
 }
 
 // Function to flip the cards
@@ -179,11 +202,14 @@ function endGame() {
 
 // Get the winner
 function getWinner() {
-  const maxScore = Math.max(score.blue, score.red, score.green || 0);
-  if (score.blue === maxScore  && score.red !== maxScore && score.blue!== maxScore ) return "Blue";
-  if (score.red === maxScore && score.green !== maxScore && score.blue!== maxScore) return "Red";
-  if(score.green === maxScore  && score.red !== maxScore && score.blue!== maxScore) return "Green"
-  return "Game is a tie!";
+  const maxScore = Math.max(...Object.values(score));
+
+  const winners = Object.keys(score).filter(player => score[player] === maxScore);
+
+  if (winners.length > 1) {
+    return "Game is a tie!";
+  }
+  return winners[0]; 
 }
 
 // Trigger confetti
@@ -196,7 +222,7 @@ function triggerConfetti() {
     return Math.random() * (max - min) + min;
   }
 
-  var interval = setInterval(function() {
+   interval = setInterval(function() {
     var timeLeft = animationEnd - Date.now();
 
     if (timeLeft <= 0) {
@@ -214,13 +240,18 @@ function triggerConfetti() {
 function updateScoreDisplay() {
   let blueSpan = document.querySelector("#blue-score");
   let redSpan = document.querySelector("#red-score");
+
   blueSpan.innerText = `Blue: ${score.blue}`;
   redSpan.innerText = `Red: ${score.red}`;
+  let greenSpan = document.getElementById("green-score");
   if (playerCount === 3) {
-    let greenSpan = document.getElementById("green-score");
     greenSpan.textContent = `Green: ${score.green}`;
   }
+  else if(greenSpan)
+  greenSpan.remove();
+  
 }
+
 
 // Function to update the active player indicator
 function updatePlayerIndicator() {
@@ -243,6 +274,17 @@ function updatePlayerIndicator() {
     const greenSpan = document.getElementById("green-score");
     greenSpan.classList.add("active");
   }
+}
+function stopConfetti() {
+  clearInterval(interval); // Stop the interval
+}
+
+
+function playAgain(){
+  stopConfetti();
+  winnerPopup.classList.remove("show");
+  playerSelectPopup.classList.add("show");
+  
 }
 
   
